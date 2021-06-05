@@ -50,4 +50,40 @@ def expose_water_surface(target_pattern=r"^\d+_dem_\d+$", edge_length=20.0):
     return
 
 
+def cleanup_isolated_vertices(target_pattern=r"^\d+_dem_\d+$"):
+    """
+    水面を削除した後、demに残った孤立頂点を削除する
+
+    参考: https://bluebirdofoz.hatenablog.com/entry/2020/01/03/220637
+
+    :param target_pattern: 対象オブジェクト名パターン（正規表現）
+    :return:
+    """
+
+    for obj in bpy.context.scene.objects:
+        obj.select_set(False)  # 一旦すべて非選択にする
+
+    pattern = re.compile(target_pattern)
+    for obj in bpy.context.scene.objects:
+        if not pattern.match(obj.name):
+            continue
+
+        print("Found dem object: {}".format(obj.name))
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.dissolve_degenerate(threshold=0.0001)  # 大きさ0を融解（結合距離 0.0001）
+
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.delete_loose(use_verts=True, use_edges=True, use_faces=False)  # 孤立を削除（頂点、辺のみ）
+
+        bpy.ops.mesh.select_all()
+        bpy.ops.mesh.remove_doubles(threshold=0.0001, use_unselected=False)  # 重複頂点を削除（結合距離 0.0001、非選択部の結合無効）
+
+    return
+
+
 expose_water_surface()
+cleanup_isolated_vertices()
