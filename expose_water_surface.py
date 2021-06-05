@@ -4,14 +4,14 @@ import bmesh
 import bpy
 
 
-def expose_water_surface(target_pattern=r"^\d+_dem_\d+$", edge_length=6.0):
+def expose_water_surface(target_pattern=r"^\d+_dem_\d+$", edge_length=20.0):
     """
     PLATEAUモデルのdemから水面を削除する
 
     少なくとも横浜市（2020年度）のdemモデルでは
     - 水面に頂点はないが面が貼られている
     - 地面は5mごとに頂点がある
-    となっていることから、6m以上の辺を削除すればよさそう
+    となっていることから、8m以上の辺を削除すればよさそう。ただしある程度は丸めたいのでしきい値は大きめ
 
     参考: https://bluebirdofoz.hatenablog.com/entry/2020/05/08/201030
 
@@ -45,7 +45,6 @@ def expose_water_surface(target_pattern=r"^\d+_dem_\d+$", edge_length=6.0):
 
         print("Remove {} edges from {}".format(remove_count, obj.name))
         mesh.select_flush_mode()
-
         obj.data.update()
 
     return
